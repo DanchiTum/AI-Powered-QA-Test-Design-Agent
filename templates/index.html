@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA Agent — AI-Powered Test Design Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="bg-grid" aria-hidden="true"></div>
+    <div class="bg-glow" aria-hidden="true"></div>
+
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'}); return false;">
+                <span class="logo-mark"><i class="fa-solid fa-flask-vial"></i></span>
+                <span class="logo-text">QA Agent</span>
+            </a>
+            <div class="nav-links" id="nav-links">
+                <a href="#product">Product</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#test-types">Test Types</a>
+                <a href="#features">Features</a>
+            </div>
+            <button class="btn-primary nav-cta" onclick="scrollToAgent()">Launch Agent <i class="fa-solid fa-arrow-right"></i></button>
+            <button class="hamburger" id="hamburger" aria-label="Toggle menu" onclick="toggleMenu()">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+        <div class="mobile-menu" id="mobile-menu">
+            <a href="#product" onclick="closeMenu()">Product</a>
+            <a href="#how-it-works" onclick="closeMenu()">How It Works</a>
+            <a href="#test-types" onclick="closeMenu()">Test Types</a>
+            <a href="#features" onclick="closeMenu()">Features</a>
+            <button class="btn-primary" onclick="scrollToAgent(); closeMenu();">Launch Agent →</button>
+        </div>
+    </nav>
+
+    <section class="hero" id="product">
+        <div class="hero-inner hero-compact">
+            <div class="hero-copy reveal">
+                <div class="badge">
+                    <span class="badge-dot"></span>
+                    AI-POWERED QA AUTOMATION
+                </div>
+                <h1>Test any website.<br><span class="gradient-text">Generate real automation code.</span></h1>
+                <p class="hero-sub">Enter a website URL, select the test types you need, and let the AI agent analyze the website and generate automation code.</p>
+                <button class="btn-primary large" onclick="scrollToAgent()">Launch QA Agent <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+        </div>
+    </section>
+
+    <section class="agent-section" id="agent-interface">
+        <div class="section-wrap">
+            <div class="analyzer-panel reveal analyzer-main">
+                <div class="panel-chrome">
+                    <div class="chrome-dots"><span></span><span></span><span></span></div>
+                    <div class="chrome-title"><i class="fa-solid fa-terminal"></i> AI QA AGENT</div>
+                </div>
+
+                <div class="panel-body">
+                    <p class="agent-idle-copy" id="agent-idle-copy">Enter a website URL and select the test types you want to generate.</p>
+
+                    <div class="field-group">
+                        <label for="website-url">Website URL</label>
+                        <div class="url-input-wrapper">
+                            <i class="fa-solid fa-globe"></i>
+                            <input type="url" id="website-url" placeholder="https://your-website.com" required>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-label-row">
+                            <label>Test Types</label>
+                            <span id="selection-count" class="selection-hint">0 selected</span>
+                        </div>
+                        <div class="test-type-cards test-type-cards-2" id="test-type-cards">
+                            <label class="type-card" data-type="functional">
+                                <input type="checkbox" id="test-functional" value="functional" onchange="updateSelectionCount()">
+                                <div class="type-card-inner">
+                                    <div class="type-check"><i class="fa-solid fa-check"></i></div>
+                                    <div class="type-info">
+                                        <strong>Functional Tests</strong>
+                                        <span>Expected successful user flows</span>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="type-card" data-type="negative">
+                                <input type="checkbox" id="test-negative" value="negative" onchange="updateSelectionCount()">
+                                <div class="type-card-inner">
+                                    <div class="type-check"><i class="fa-solid fa-check"></i></div>
+                                    <div class="type-info">
+                                        <strong>Negative Tests</strong>
+                                        <span>Invalid input and error handling</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <div id="combined-hint" class="combined-hint hidden">
+                            <i class="fa-solid fa-layer-group"></i>
+                            Both types selected — combined suite
+                        </div>
+                    </div>
+
+                    <button class="btn-generate" id="generate-btn" onclick="startGeneration()" disabled>
+                        <span id="generate-btn-label">Generate Automation Tests</span>
+                        <i class="fa-solid fa-arrow-right" id="generate-btn-icon"></i>
+                    </button>
+
+                    <div id="agent-status" class="agent-status hidden" aria-live="polite">
+                        <span class="status-dot"></span>
+                        <span id="agent-status-text">Working…</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="results-section" class="results-section hidden">
+        <div class="section-wrap">
+            <div class="results-header">
+                <h2>Generated Results</h2>
+                <p class="results-sub">Output from your request appears below when available.</p>
+            </div>
+
+            <div class="suite-meta" id="suite-meta">
+                <div class="meta-item">
+                    <span class="meta-label">Target</span>
+                    <span class="meta-value" id="meta-target">—</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Test Types</span>
+                    <span class="meta-value badges" id="meta-types"></span>
+                </div>
+            </div>
+
+            <div class="code-editor" id="code-editor">
+                <div class="editor-toolbar">
+                    <div class="file-tabs" id="file-tabs">
+                        <span class="file-tab active"><i class="fa-brands fa-python"></i> generated_tests.py</span>
+                    </div>
+                    <div class="editor-actions">
+                        <button class="editor-btn" id="copy-btn" onclick="copyEditorCode()" disabled><i class="fa-regular fa-copy"></i> Copy</button>
+                        <button class="editor-btn" id="download-btn" onclick="downloadCode()" disabled><i class="fa-solid fa-download"></i> Download</button>
+                    </div>
+                </div>
+                <div class="editor-body" id="editor-body">
+                    <div class="code-empty" id="code-empty">Generated automation code will appear here.</div>
+                    <div class="line-numbers hidden" id="line-numbers"></div>
+                    <pre class="code-content hidden"><code id="editor-code"></code></pre>
+                </div>
+            </div>
+
+            <div class="scenarios-block">
+                <h3>Generated tests</h3>
+                <div class="test-cases-grid" id="test-cases-grid">
+                    <p class="empty-state" id="tests-empty">Generated tests will appear here.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="section workflow-section">
+        <div class="section-wrap">
+            <div class="section-intro reveal">
+                <span class="section-label">HOW IT WORKS</span>
+                <h2>Four steps</h2>
+            </div>
+            <div class="workflow-steps workflow-steps-4">
+                <div class="wf-step reveal">
+                    <div class="wf-num">01</div>
+                    <div class="wf-icon"><i class="fa-solid fa-link"></i></div>
+                    <h3>Enter URL</h3>
+                </div>
+                <div class="wf-connector" aria-hidden="true"></div>
+                <div class="wf-step reveal">
+                    <div class="wf-num">02</div>
+                    <div class="wf-icon"><i class="fa-solid fa-list-check"></i></div>
+                    <h3>Select test types</h3>
+                </div>
+                <div class="wf-connector" aria-hidden="true"></div>
+                <div class="wf-step reveal">
+                    <div class="wf-num">03</div>
+                    <div class="wf-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+                    <h3>AI analyzes the website</h3>
+                </div>
+                <div class="wf-connector" aria-hidden="true"></div>
+                <div class="wf-step reveal">
+                    <div class="wf-num">04</div>
+                    <div class="wf-icon"><i class="fa-solid fa-code"></i></div>
+                    <h3>Generate automation code</h3>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="test-types" class="section test-types-section">
+        <div class="section-wrap">
+            <div class="section-intro reveal">
+                <span class="section-label">TEST TYPES</span>
+                <h2>What you can generate</h2>
+            </div>
+            <div class="tt-grid tt-grid-2">
+                <article class="tt-card reveal">
+                    <div class="tt-header">
+                        <span class="tt-badge functional">FUNCTIONAL</span>
+                        <h3>Functional Tests</h3>
+                    </div>
+                    <p>Generate automation for expected successful user flows and functionality.</p>
+                </article>
+                <article class="tt-card reveal">
+                    <div class="tt-header">
+                        <span class="tt-badge negative">NEGATIVE</span>
+                        <h3>Negative Tests</h3>
+                    </div>
+                    <p>Generate automation for invalid input, error handling, and unsuccessful scenarios.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="section features-section">
+        <div class="section-wrap">
+            <div class="section-intro reveal">
+                <span class="section-label">FEATURES</span>
+                <h2>What the agent does</h2>
+            </div>
+            <div class="features-grid features-grid-5">
+                <article class="feature-card reveal">
+                    <div class="feature-icon"><i class="fa-solid fa-globe"></i></div>
+                    <h3>AI Website Analysis</h3>
+                    <p>Inspect the target website before generating tests.</p>
+                </article>
+                <article class="feature-card reveal">
+                    <div class="feature-icon"><i class="fa-solid fa-circle-check"></i></div>
+                    <h3>Functional Test Generation</h3>
+                    <p>Build automation for successful flows and expected behavior.</p>
+                </article>
+                <article class="feature-card reveal">
+                    <div class="feature-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <h3>Negative Test Generation</h3>
+                    <p>Cover invalid input and error-handling scenarios.</p>
+                </article>
+                <article class="feature-card reveal">
+                    <div class="feature-icon"><i class="fa-solid fa-layer-group"></i></div>
+                    <h3>Combined Test Generation</h3>
+                    <p>Select Functional and Negative together in one request.</p>
+                </article>
+                <article class="feature-card reveal">
+                    <div class="feature-icon"><i class="fa-solid fa-code"></i></div>
+                    <h3>Automation Code Generation</h3>
+                    <p>Produce executable automation code from the analysis.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="section tech-section">
+        <div class="section-wrap">
+            <div class="section-intro reveal">
+                <span class="section-label">BUILT WITH</span>
+                <h2>Technical stack</h2>
+            </div>
+            <div class="tech-pills reveal">
+                <span><i class="fa-brands fa-python"></i> Python</span>
+                <span><i class="fa-solid fa-server"></i> Flask</span>
+                <span><i class="fa-solid fa-code"></i> HTML / CSS / JavaScript</span>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-inner footer-simple">
+            <div class="footer-brand">
+                <div class="logo">
+                    <span class="logo-mark"><i class="fa-solid fa-flask-vial"></i></span>
+                    <span class="logo-text">QA Agent</span>
+                </div>
+                <p>AI-Powered QA Test Design Agent</p>
+            </div>
+            <div class="footer-links">
+                <a href="#product">Product</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#test-types">Test Types</a>
+                <a href="#features">Features</a>
+                <a href="#agent-interface">Generate Tests</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
